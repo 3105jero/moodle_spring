@@ -1,23 +1,20 @@
 package com.riwi.eventify.repositories;
 
-import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import com.riwi.eventify.models.Venue;
 
 @Repository
-public class VenueRepository {
+public interface VenueRepository extends JpaRepository<Venue, Long> {
 
-    private List<Venue> venues = new ArrayList<>();
+    // Derived Query: busca lugares cuyo nombre contenga el texto (case-insensitive)
+    List<Venue> findByNameContainingIgnoreCase(String name);
 
-    public List<Venue> findAll() {
-        return venues;
-    }
-
-    public Venue save(Venue venue) {
-        venues.add(venue);
-        return venue;
-    }
+    // Versión paginada
+    Page<Venue> findByNameContainingIgnoreCase(String name, Pageable pageable);
 }

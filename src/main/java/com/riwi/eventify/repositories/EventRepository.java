@@ -1,23 +1,20 @@
 package com.riwi.eventify.repositories;
 
-import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import com.riwi.eventify.models.Event;
 
 @Repository
-public class EventRepository {
+public interface EventRepository extends JpaRepository<Event, Long> {
 
-    private List<Event> events = new ArrayList<>();
+    // Derived Query: busca eventos cuyo nombre contenga el texto (case-insensitive)
+    List<Event> findByNameContainingIgnoreCase(String name);
 
-    public List<Event> findAll() {
-        return events;
-    }
-
-    public Event save(Event event) {
-        events.add(event);
-        return event;
-    }
+    // Versión paginada
+    Page<Event> findByNameContainingIgnoreCase(String name, Pageable pageable);
 }
