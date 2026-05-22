@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eventify — Nuevo Lugar</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar">
+    <a href="/admin" class="navbar-brand">
+        Eventify <span>panel administrativo</span>
+    </a>
+    <div class="nav-links">
+        <a th:href="@{/admin}" class="nav-btn">← Volver al panel</a>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="form-card">
+        <h2 class="form-title">Registrar nuevo lugar</h2>
+
+        <form th:action="@{/admin/venues/save}"
+              th:object="${venue}"
+              method="post">
+
+            <!-- Nombre -->
+            <div class="form-group">
+                <label for="name">Nombre del lugar</label>
+                <input type="text"
+                       id="name"
+                       th:field="*{name}"
+                       placeholder="Ej: Teatro Nacional"/>
+                <span class="error-msg"
+                      th:if="${#fields.hasErrors('name')}"
+                      th:errors="*{name}">
+                </span>
+            </div>
+
+            <!-- Ciudad -->
+            <div class="form-group">
+                <label for="city">Ciudad</label>
+                <input type="text"
+                       id="city"
+                       th:field="*{city}"
+                       placeholder="Ej: Bogotá"/>
+                <span class="error-msg"
+                      th:if="${#fields.hasErrors('city')}"
+                      th:errors="*{city}">
+                </span>
+            </div>
+
+            <!-- Dirección -->
+            <div class="form-group">
+                <label for="address">Dirección</label>
+                <input type="text"
+                       id="address"
+                       th:field="*{address}"
+                       placeholder="Ej: Calle 10 #5-23"/>
+                <span class="error-msg"
+                      th:if="${#fields.hasErrors('address')}"
+                      th:errors="*{address}">
+                </span>
+            </div>
+
+            <!-- Capacidad -->
+            <div class="form-group">
+                <label for="capacity">Capacidad</label>
+                <input type="number"
+                       id="capacity"
+                       th:field="*{capacity}"
+                       placeholder="Ej: 500"
+                       min="1"/>
+                <span class="error-msg"
+                      th:if="${#fields.hasErrors('capacity')}"
+                      th:errors="*{capacity}">
+                </span>
+            </div>
+
+            <!-- Acciones -->
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Guardar lugar</button>
+                <a th:href="@{/admin}" class="btn btn-secondary">Cancelar</a>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+</body>
+</html>

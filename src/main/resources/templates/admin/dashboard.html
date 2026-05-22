@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eventify — Panel Administrativo</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar">
+    <a href="/admin" class="navbar-brand">
+        Eventify <span>panel administrativo</span>
+    </a>
+    <div class="nav-links">
+        <a th:href="@{/admin/venues/new}" class="nav-btn">+ Nuevo Lugar</a>
+        <a th:href="@{/admin/events/new}" class="nav-btn primary">+ Nuevo Evento</a>
+    </div>
+</nav>
+
+<div class="container">
+
+    <!-- Stats -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <span class="label">Total Eventos</span>
+            <span class="value" th:text="${#lists.size(events)}">0</span>
+        </div>
+        <div class="stat-card">
+            <span class="label">Total Lugares</span>
+            <span class="value" th:text="${#lists.size(venues)}">0</span>
+        </div>
+    </div>
+
+    <!-- Tabla de Eventos -->
+    <div class="section-header">
+        <h2 class="section-title">Eventos registrados</h2>
+    </div>
+
+    <div class="table-wrapper">
+        <table th:unless="${#lists.isEmpty(events)}">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Nombre</th>
+                    <th>Descripción</th>
+                    <th>Fecha</th>
+                    <th>Lugar</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="event : ${events}">
+                    <td th:text="${event.id}"></td>
+                    <td>
+                        <span class="badge badge-purple" th:text="${event.name}"></span>
+                    </td>
+                    <td th:text="${event.description}"></td>
+                    <td th:text="${#temporals.format(event.eventDate, 'dd/MM/yyyy HH:mm')}"></td>
+                    <td>
+                        <span class="badge badge-green" th:text="${event.venue.name}"></span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Estado vacío -->
+        <div class="empty-state" th:if="${#lists.isEmpty(events)}">
+            <div class="icon">📭</div>
+            <p>Actualmente no hay eventos programados</p>
+        </div>
+    </div>
+
+    <!-- Tabla de Lugares -->
+    <div class="section-header">
+        <h2 class="section-title">Lugares registrados</h2>
+    </div>
+
+    <div class="table-wrapper">
+        <table th:unless="${#lists.isEmpty(venues)}">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Nombre</th>
+                    <th>Ciudad</th>
+                    <th>Dirección</th>
+                    <th>Capacidad</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="venue : ${venues}">
+                    <td th:text="${venue.id}"></td>
+                    <td>
+                        <span class="badge badge-purple" th:text="${venue.name}"></span>
+                    </td>
+                    <td th:text="${venue.city}"></td>
+                    <td th:text="${venue.address}"></td>
+                    <td th:text="${venue.capacity}"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Estado vacío -->
+        <div class="empty-state" th:if="${#lists.isEmpty(venues)}">
+            <div class="icon">🏛️</div>
+            <p>No hay lugares registrados aún</p>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

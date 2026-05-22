@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eventify — Nuevo Evento</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar">
+    <a href="/admin" class="navbar-brand">
+        Eventify <span>panel administrativo</span>
+    </a>
+    <div class="nav-links">
+        <a th:href="@{/admin}" class="nav-btn">← Volver al panel</a>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="form-card">
+        <h2 class="form-title">Registrar nuevo evento</h2>
+
+        <form th:action="@{/admin/events/save}"
+              th:object="${event}"
+              method="post">
+
+            <!-- Nombre -->
+            <div class="form-group">
+                <label for="name">Nombre del evento</label>
+                <input type="text"
+                       id="name"
+                       th:field="*{name}"
+                       placeholder="Ej: Concierto de Jazz"/>
+                <span class="error-msg"
+                      th:if="${#fields.hasErrors('name')}"
+                      th:errors="*{name}">
+                </span>
+            </div>
+
+            <!-- Descripción -->
+            <div class="form-group">
+                <label for="description">Descripción</label>
+                <textarea id="description"
+                          th:field="*{description}"
+                          rows="3"
+                          placeholder="Describe el evento...">
+                </textarea>
+                <span class="error-msg"
+                      th:if="${#fields.hasErrors('description')}"
+                      th:errors="*{description}">
+                </span>
+            </div>
+
+            <!-- Fecha -->
+            <div class="form-group">
+                <label for="eventDate">Fecha y hora</label>
+                <input type="datetime-local"
+                       id="eventDate"
+                       th:field="*{eventDate}"/>
+                <span class="error-msg"
+                      th:if="${#fields.hasErrors('eventDate')}"
+                      th:errors="*{eventDate}">
+                </span>
+            </div>
+
+            <!-- Lugar -->
+            <div class="form-group">
+                <label for="venue">Lugar</label>
+                <select id="venue" th:field="*{venue}">
+                    <option value="">-- Selecciona un lugar --</option>
+                    <option th:each="venue : ${venues}"
+                            th:value="${venue.id}"
+                            th:text="${venue.name + ' — ' + venue.city}">
+                    </option>
+                </select>
+                <span class="error-msg"
+                      th:if="${#fields.hasErrors('venue')}"
+                      th:errors="*{venue}">
+                </span>
+            </div>
+
+            <!-- Acciones -->
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Guardar evento</button>
+                <a th:href="@{/admin}" class="btn btn-secondary">Cancelar</a>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+</body>
+</html>
