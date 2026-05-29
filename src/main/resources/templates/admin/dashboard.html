@@ -24,14 +24,48 @@
     <!-- Stats -->
     <div class="stats-grid">
         <div class="stat-card">
-            <span class="label">Total Eventos</span>
+            <span class="label">Eventos en esta página</span>
             <span class="value" th:text="${#lists.size(events)}">0</span>
         </div>
         <div class="stat-card">
             <span class="label">Total Lugares</span>
             <span class="value" th:text="${#lists.size(venues)}">0</span>
         </div>
+        <div class="stat-card">
+            <span class="label">Total Categorías</span>
+            <span class="value" th:text="${#lists.size(categories)}">0</span>
+        </div>
     </div>
+
+    <!-- Filtros de búsqueda -->
+    <!-- Los filtros se envían como parámetros GET para mantenerlos en la URL -->
+    <div class="section-header">
+        <h2 class="section-title">Buscar eventos</h2>
+    </div>
+
+    <form th:action="@{/admin}" method="get" class="filter-form">
+        <div class="filter-group">
+            <!-- Filtro por ciudad — búsqueda parcial -->
+            <input type="text"
+                   name="city"
+                   placeholder="Buscar por ciudad..."
+                   th:value="${cityFilter}"/>
+
+            <!-- Filtro por categoría — desplegable con las categorías del sistema -->
+            <select name="categoryName">
+                <option value="">-- Todas las categorías --</option>
+                <option th:each="cat : ${categories}"
+                        th:value="${cat.name}"
+                        th:text="${cat.name}"
+                        th:selected="${cat.name == categoryFilter}">
+                </option>
+            </select>
+
+            <button type="submit" class="btn btn-primary">Buscar</button>
+            <!-- Limpiar filtros redirige al dashboard sin parámetros -->
+            <a th:href="@{/admin}" class="btn btn-secondary">Limpiar</a>
+        </div>
+    </form>
 
     <!-- Tabla de Eventos -->
     <div class="section-header">
@@ -39,26 +73,37 @@
     </div>
 
     <div class="table-wrapper">
+        <!-- Ahora itera sobre EventSummaryDTO en vez de entidades Event -->
         <table th:unless="${#lists.isEmpty(events)}">
             <thead>
                 <tr>
                     <th>#</th>
                     <th>Nombre</th>
-                    <th>Descripción</th>
                     <th>Fecha</th>
                     <th>Lugar</th>
+                    <th>Ciudad</th>
+                    <th>Acciones</th>
                 </tr>
             </thead>
             <tbody>
                 <tr th:each="event : ${events}">
-                    <td th:text="${event.id}"></td>
+                    <!-- EventSummaryDTO es un Record — accede a sus campos como métodos -->
+                    <td th:text="${event.id()}"></td>
                     <td>
-                        <span class="badge badge-purple" th:text="${event.name}"></span>
+                        <span class="badge badge-purple" th:text="${event.eventName()}"></span>
                     </td>
-                    <td th:text="${event.description}"></td>
-                    <td th:text="${#temporals.format(event.eventDate, 'dd/MM/yyyy HH:mm')}"></td>
+                    <td th:text="${#temporals.format(event.eventDate(), 'dd/MM/yyyy HH:mm')}"></td>
                     <td>
-                        <span class="badge badge-green" th:text="${event.venue.name}"></span>
+                        <span class="badge badge-green" th:text="${event.venueName()}"></span>
+                    </td>
+                    <td th:text="${event.city()}"></td>
+                    <td>
+                        <!-- Soft delete — usa POST para no exponer la acción en la URL -->
+                        <form th:action="@{/admin/events/delete/{id}(id=${event.id()})}"
+                              method="post"
+                              onsubmit="return confirm('¿Desactivar este evento?')">
+                            <button type="submit" class="btn btn-danger">Eliminar</button>
+                        </form>
                     </td>
                 </tr>
             </tbody>
@@ -67,8 +112,26 @@
         <!-- Estado vacío -->
         <div class="empty-state" th:if="${#lists.isEmpty(events)}">
             <div class="icon">📭</div>
-            <p>Actualmente no hay eventos programados</p>
+            <p>No se encontraron eventos con los filtros aplicados</p>
         </div>
+    </div>
+
+    <!-- Navegación paginada -->
+    <!-- Los filtros activos se mantienen en los parámetros de la URL -->
+    <div class="pagination">
+        <!-- Botón Anterior — deshabilitado si estamos en la primera página -->
+        <a th:if="${hasPrevious}"
+           th:href="@{/admin(page=${currentPage - 1}, city=${cityFilter}, categoryName=${categoryFilter})}"
+           class="btn btn-secondary">← Anterior</a>
+        <span th:unless="${hasPrevious}" class="btn btn-disabled">← Anterior</span>
+
+        <span class="page-info">Página <strong th:text="${currentPage + 1}"></strong></span>
+
+        <!-- Botón Siguiente — deshabilitado si no hay más registros -->
+        <a th:if="${hasNext}"
+           th:href="@{/admin(page=${currentPage + 1}, city=${cityFilter}, categoryName=${categoryFilter})}"
+           class="btn btn-secondary">Siguiente →</a>
+        <span th:unless="${hasNext}" class="btn btn-disabled">Siguiente →</span>
     </div>
 
     <!-- Tabla de Lugares -->
@@ -100,7 +163,6 @@
             </tbody>
         </table>
 
-        <!-- Estado vacío -->
         <div class="empty-state" th:if="${#lists.isEmpty(venues)}">
             <div class="icon">🏛️</div>
             <p>No hay lugares registrados aún</p>

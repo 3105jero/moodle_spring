@@ -65,7 +65,7 @@
                 </span>
             </div>
 
-            <!-- Lugar -->
+            <!-- Lugar — desplegable con todos los venues disponibles -->
             <div class="form-group">
                 <label for="venue">Lugar</label>
                 <select id="venue" th:field="*{venue}">
@@ -79,6 +79,23 @@
                       th:if="${#fields.hasErrors('venue')}"
                       th:errors="*{venue}">
                 </span>
+            </div>
+
+            <!-- Categorías — checkboxes, se envían como lista de IDs -->
+            <!-- El name="categoryIds" coincide con el @RequestParam del controller -->
+            <div class="form-group">
+                <label>Categorías</label>
+                <div class="checkbox-group">
+                    <div th:each="cat : ${categories}" class="checkbox-item">
+                        <input type="checkbox"
+                               name="categoryIds"
+                               th:value="${cat.id}"
+                               th:id="'cat-' + ${cat.id}"/>
+                        <label th:for="'cat-' + ${cat.id}"
+                               th:text="${cat.name}">
+                        </label>
+                    </div>
+                </div>
             </div>
 
             <!-- Acciones -->

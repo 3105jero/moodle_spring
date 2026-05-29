@@ -325,3 +325,104 @@ tbody td {
     border-color: var(--accent);
     color: var(--accent2);
 }
+
+
+/* ── Filtros de búsqueda ────────────────────────────────────── */
+.filter-form {
+    background: var(--surface, #1e1e2e);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.filter-group {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.filter-group input,
+.filter-group select {
+    flex: 1;
+    min-width: 180px;
+    padding: 0.6rem 1rem;
+    border-radius: 8px;
+    border: 1px solid #444;
+    background: #2a2a3e;
+    color: #cdd6f4;
+    font-size: 0.9rem;
+}
+
+/* ── Checkboxes de categorías ───────────────────────────────── */
+.checkbox-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+.checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: #2a2a3e;
+    padding: 0.4rem 0.8rem;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.checkbox-item input[type="checkbox"] {
+    accent-color: #cba6f7;
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+.checkbox-item label {
+    color: #cdd6f4;
+    font-size: 0.9rem;
+    cursor: pointer;
+    margin: 0;
+}
+
+/* ── Paginación ─────────────────────────────────────────────── */
+.pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin: 1.5rem 0;
+}
+
+.page-info {
+    color: #cdd6f4;
+    font-size: 0.95rem;
+}
+
+.btn-disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
+    background: #2a2a3e;
+    color: #cdd6f4;
+    padding: 0.5rem 1.2rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+}
+
+/* ── Botón eliminar ─────────────────────────────────────────── */
+.btn-danger {
+    background: #f38ba8;
+    color: #1e1e2e;
+    border: none;
+    padding: 0.4rem 0.9rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.btn-danger:hover {
+    background: #eb6c8a;
+}

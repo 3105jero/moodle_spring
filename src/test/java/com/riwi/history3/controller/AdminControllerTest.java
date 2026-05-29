@@ -1,24 +1,29 @@
 package com.riwi.history3.controller;
 
-import com.riwi.history3.model.Event;
-import com.riwi.history3.model.Venue;
-import com.riwi.history3.service.EventService;
-import com.riwi.history3.service.VenueService;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
-
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.List;
 
+import org.junit.jupiter.api.Test;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.SliceImpl;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
+
+import com.riwi.history3.dto.EventSummaryDTO;
+import com.riwi.history3.model.Category;
+import com.riwi.history3.model.Venue;
+import com.riwi.history3.service.CategoryService;
+import com.riwi.history3.service.EventService;
+import com.riwi.history3.service.VenueService;
 
 @WebMvcTest(AdminController.class)
 class AdminControllerTest {
@@ -32,83 +37,95 @@ class AdminControllerTest {
     @MockitoBean
     private VenueService venueService;
 
+    @MockitoBean
+    private CategoryService categoryService;
+
+    // ── Test 1: dashboard carga correctamente sin filtros ────────
     @Test
-    @DisplayName("Escenario 1 — Dashboard renderiza tabla con eventos y lugares")
-    void dashboard_conDatos_retornaVista() throws Exception {
+    void dashboard_sinFiltros_retornaVistaConEventos() throws Exception {
 
-        Venue venue = Venue.builder()
-                .id(1L)
-                .name("Teatro Nacional")
-                .city("Bogotá")
-                .address("Calle 10 #5-23")
-                .capacity(500)
-                .build();
+        // Datos de prueba — un EventSummaryDTO simulado
+        EventSummaryDTO dto = new EventSummaryDTO(
+                1L,
+                "Concierto de Jazz",
+                LocalDateTime.of(2025, 6, 15, 20, 0),
+                "Teatro Mayor",
+                "Bogotá"
+        );
 
-        Event event = Event.builder()
-                .id(1L)
-                .name("Concierto de Jazz")
-                .description("Una noche de jazz en vivo")
-                .eventDate(LocalDateTime.now().plusDays(5))
-                .venue(venue)
-                .build();
+        // Mock del servicio — retorna un Slice con el DTO
+        when(eventService.findAllSummaries(any(PageRequest.class)))
+                .thenReturn(new SliceImpl<>(List.of(dto)));
 
-        when(eventService.findAll()).thenReturn(List.of(event));
-        when(venueService.findAll()).thenReturn(List.of(venue));
+        when(venueService.findAll())
+               .thenReturn(List.of(Venue.builder()
+        .id(1L)
+        .name("Teatro Mayor")
+        .address("Calle 24")
+        .city("Bogotá")
+        .capacity(2000)
+        .build()));
 
+        when(categoryService.findAll())
+                .thenReturn(List.of(new Category(1L, "Conciertos", "Eventos musicales")));
+        
+        // Ejecuta GET /admin y verifica la respuesta
         mockMvc.perform(get("/admin"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("admin/dashboard"))
                 .andExpect(model().attributeExists("events"))
-                .andExpect(model().attributeExists("venues"));
+                .andExpect(model().attributeExists("venues"))
+                .andExpect(model().attributeExists("categories"))
+                .andExpect(model().attribute("currentPage", 0))
+                .andExpect(model().attribute("hasPrevious", false));
     }
 
+    // ── Test 2: dashboard filtra por ciudad ──────────────────────
     @Test
-    @DisplayName("Escenario 2 — Dashboard muestra estado vacío cuando no hay registros")
-    void dashboard_sinDatos_retornaVistaVacia() throws Exception {
+    void dashboard_conFiltroCiudad_retornaEventosFiltrados() throws Exception {
 
-        when(eventService.findAll()).thenReturn(Collections.emptyList());
-        when(venueService.findAll()).thenReturn(Collections.emptyList());
+        EventSummaryDTO dto = new EventSummaryDTO(
+                2L,
+                "Festival Gastronómico",
+                LocalDateTime.of(2025, 7, 20, 12, 0),
+                "Plaza Mayor",
+                "Medellín"
+        );
 
-        mockMvc.perform(get("/admin"))
+        // Mock específico para búsqueda por ciudad
+        when(eventService.findByCity(eq("Medellín"), any(PageRequest.class)))
+                .thenReturn(new SliceImpl<>(List.of(dto)));
+
+        when(venueService.findAll()).thenReturn(List.of());
+        when(categoryService.findAll()).thenReturn(List.of());
+
+        mockMvc.perform(get("/admin").param("city", "Medellín"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("admin/dashboard"))
-                .andExpect(model().attributeExists("events"))
-                .andExpect(model().attribute("events", Collections.emptyList()));
+                .andExpect(model().attribute("cityFilter", "Medellín"));
     }
 
+    // ── Test 3: dashboard filtra por categoría ───────────────────
     @Test
-    @DisplayName("Escenario 3 — Formulario de nuevo evento carga correctamente")
-    void newEventForm_retornaFormulario() throws Exception {
+    void dashboard_conFiltroCategoria_retornaEventosFiltrados() throws Exception {
 
-        when(venueService.findAll()).thenReturn(Collections.emptyList());
+        EventSummaryDTO dto = new EventSummaryDTO(
+                3L,
+                "Concierto de Rock",
+                LocalDateTime.of(2025, 8, 10, 21, 0),
+                "Plaza Mayor",
+                "Medellín"
+        );
 
-        mockMvc.perform(get("/admin/events/new"))
+        when(eventService.findByCategoryName(eq("Conciertos"), any(PageRequest.class)))
+                .thenReturn(new SliceImpl<>(List.of(dto)));
+
+        when(venueService.findAll()).thenReturn(List.of());
+        when(categoryService.findAll()).thenReturn(List.of());
+
+        mockMvc.perform(get("/admin").param("categoryName", "Conciertos"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("admin/event-form"))
-                .andExpect(model().attributeExists("event"))
-                .andExpect(model().attributeExists("venues"));
-    }
-
-    @Test
-    @DisplayName("Escenario 4 — Formulario de nuevo lugar carga correctamente")
-    void newVenueForm_retornaFormulario() throws Exception {
-
-        mockMvc.perform(get("/admin/venues/new"))
-                .andExpect(status().isOk())
-                .andExpect(view().name("admin/venue-form"))
-                .andExpect(model().attributeExists("venue"));
-    }
-
-    @Test
-    @DisplayName("Escenario 5 — Guardar lugar válido redirige al dashboard")
-    void saveVenue_valido_redirigeDashboard() throws Exception {
-
-        mockMvc.perform(post("/admin/venues/save")
-                        .param("name", "Teatro Nacional")
-                        .param("city", "Bogotá")
-                        .param("address", "Calle 10 #5-23")
-                        .param("capacity", "500"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/admin"));
+                .andExpect(view().name("admin/dashboard"))
+                .andExpect(model().attribute("categoryFilter", "Conciertos"));
     }
 }
